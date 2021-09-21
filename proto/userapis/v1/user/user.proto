@@ -1,0 +1,150 @@
+syntax = "proto3";
+
+package user.v1;
+
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "gogoproto/gogo.proto";
+import "google/protobuf/wrappers.proto";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info : {title : "Refactor User Service";
+version : "2.0";
+contact : {
+name:
+  "tuanden0";
+url:
+  "github.com/tuanden0/refactor_user_ms";
+};
+}
+;
+}
+;
+
+option (gogoproto.gostring_all) = true;
+option (gogoproto.goproto_stringer_all) = false;
+option (gogoproto.stringer_all) = true;
+
+service UserService {
+  rpc Ping(PingRequest) returns (PingResponse) {
+    option (google.api.http) = {
+      get : "/v1/user/ping"
+    };
+  }
+  rpc Create(CreateRequest) returns (CreateResponse) {
+    option (google.api.http) = {
+      post : "/v1/user"
+      body : "*"
+    };
+  }
+  rpc Retrieve(RetrieveRequest) returns (RetrieveResponse) {
+    option (google.api.http) = {
+      get : "/v1/user/{id}"
+    };
+  }
+  rpc Update(UpdateRequest) returns (UpdateResponse) {
+    option (google.api.http) = {
+      patch : "/v1/user/{id}"
+      body : "*"
+    };
+  }
+  rpc Delete(DeleteRequest) returns (DeleteResponse) {
+    option (google.api.http) = {
+      delete : "/v1/user/{id}"
+    };
+  }
+  rpc List(ListRequest) returns (ListResponse) {
+    option (google.api.http) = {
+      post : "/v1/users"
+      body : "*"
+    };
+  }
+}
+
+message Pagination {
+  uint64 limit = 1 [(gogoproto.moretags) = "validate:\"omitempty,gt=0\""];
+  uint64 page = 2 [(gogoproto.moretags) = "validate:\"omitempty,gt=0\""];
+}
+
+message Filter {
+  string key = 1;
+  string value = 2;
+  string method = 3;
+}
+
+message Sort {
+  string key = 1;
+  bool is_asc = 2;
+}
+
+enum Role {
+  ROLE_UNSPECIFIED = 0;
+  ROLE_ADMIN = 1;
+  ROLE_USER = 2;
+}
+
+message PingRequest {}
+
+message PingResponse {}
+
+message CreateRequest {
+  string username = 1 [(gogoproto.moretags) = "validate:\"required,gt=3\""];
+  string password = 2 [(gogoproto.moretags) = "validate:\"required,gt=4\""];
+  string email = 3 [(gogoproto.moretags) = "validate:\"required,email\""];
+  Role role = 4;
+}
+
+message CreateResponse {
+  uint64 id = 1;
+  string username = 2;
+  string email = 3;
+  Role role = 4;
+}
+
+message RetrieveRequest {
+  uint64 id = 1 [(gogoproto.moretags) = "validate:\"required,gt=0\""];
+}
+
+message RetrieveResponse {
+  uint64 id = 1;
+  string username = 2;
+  string email = 3;
+  Role role = 4;
+}
+
+message UpdateRequest {
+  uint64 id = 1 [(gogoproto.moretags) = "validate:\"required,gt=0\""];
+  google.protobuf.StringValue username = 2;
+  google.protobuf.StringValue password = 3;
+  google.protobuf.StringValue email = 4
+      [(gogoproto.moretags) = "validate:\"omitempty,email\""];
+  Role role = 5;
+}
+
+message UpdateResponse {
+  uint64 id = 1;
+  string username = 2;
+  string email = 3;
+  Role role = 4;
+}
+
+message DeleteRequest {
+  uint64 id = 1 [(gogoproto.moretags) = "validate:\"required,gt=0\""];
+}
+
+message DeleteResponse {}
+
+message ListRequest {
+  Pagination pagination = 1;
+  repeated Filter filters = 2;
+  Sort sort = 3;
+}
+
+message UserList {
+  uint64 id = 1;
+  string username = 2;
+  string email = 3;
+  Role role = 4;
+}
+
+message ListResponse { repeated UserList users = 1; }
