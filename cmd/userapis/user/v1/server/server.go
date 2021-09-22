@@ -12,6 +12,8 @@ var (
 )
 
 func init() {
+	flag.Lookup("v").Value.Set("2")
+	flag.Lookup("logtostderr").Value.Set("true")
 	flag.Parse()
 }
 

@@ -30,11 +30,16 @@ func NewRepoManager(client *ent.Client) Repository {
 
 func (r *repoManager) Create(ctx context.Context, u *userv1.CreateRequest) (*ent.User, error) {
 
+	hashed, err := hashPassword(u.GetPassword())
+	if err != nil {
+		return nil, err
+	}
+
 	user, err := r.client.User.
 		Create().
 		SetUsername(u.GetUsername()).
 		SetEmail(u.GetEmail()).
-		SetPassword(u.GetPassword()).
+		SetPassword(hashed).
 		SetRole(uint32(u.GetRole())).
 		Save(ctx)
 	if err != nil {
