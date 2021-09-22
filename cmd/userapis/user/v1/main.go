@@ -8,11 +8,10 @@ import (
 )
 
 var (
-	addr string
+	addr = flag.String("ip", "0.0.0.0:8000", "server address:port")
 )
 
 func init() {
-	flag.StringVar(&addr, "ip", "0.0.0.0:8000", "server address:port")
 	flag.Parse()
 }
 
@@ -34,7 +33,7 @@ func main() {
 	// Create new service
 	srv := v1.NewService(userRepo)
 
-	if err := v1.RunServer(srv, addr); err != nil {
+	if err := v1.RunServer(srv, *addr); err != nil {
 		glog.Fatal(err)
 	}
 }
