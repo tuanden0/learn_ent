@@ -23,16 +23,6 @@ func setupServeMuxOptions() (opts []runtime.ServeMuxOption) {
 	return opts
 }
 
-func grpcHandlerFunc(grpcServer *grpc.Server, otherHandler http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.ProtoMajor == 2 && strings.Contains(r.Header.Get("Content-Type"), "application/grpc") {
-			grpcServer.ServeHTTP(w, r)
-		} else {
-			otherHandler.ServeHTTP(w, r)
-		}
-	})
-}
-
 func RunServer(srv Service, addr string) error {
 
 	// Create new context
@@ -75,7 +65,7 @@ func RunServer(srv Service, addr string) error {
 	}
 
 	gwServer := &http.Server{
-		Handler: grpcHandlerFunc(grpcServer, gwmux),
+		Handler: gwmux,
 	}
 
 	go func() {

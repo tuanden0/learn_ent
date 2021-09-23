@@ -30,10 +30,7 @@ func NewRepoManager(client *ent.Client) Repository {
 
 func (r *repoManager) Create(ctx context.Context, u *userv1.CreateRequest) (*ent.User, error) {
 
-	hashed, err := hashPassword(u.GetPassword())
-	if err != nil {
-		return nil, err
-	}
+	hashed := hashPassword(u.GetPassword())
 
 	user, err := r.client.User.
 		Create().
@@ -42,10 +39,10 @@ func (r *repoManager) Create(ctx context.Context, u *userv1.CreateRequest) (*ent
 		SetPassword(hashed).
 		SetRole(uint32(u.GetRole())).
 		Save(ctx)
+
 	if err != nil {
 		return nil, err
 	}
-
 	return user, nil
 }
 
@@ -68,7 +65,7 @@ func (r *repoManager) Update(ctx context.Context, u *userv1.UpdateRequest) (*ent
 	}
 
 	if u.GetPassword() != nil {
-		user = user.SetPassword(u.GetPassword().GetValue())
+		user = user.SetPassword(hashPassword(u.GetPassword().GetValue()))
 	}
 
 	ux, err := user.Save(ctx)
