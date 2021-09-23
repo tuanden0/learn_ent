@@ -32,8 +32,14 @@ func main() {
 	// Create user repo
 	userRepo := v1.NewRepoManager(userDB)
 
+	// Create user validator
+	userValidator := v1.NewValidate()
+	if err := userValidator.Init(); err != nil {
+		glog.Fatal(err)
+	}
+
 	// Create new service
-	srv := v1.NewService(userRepo)
+	srv := v1.NewService(userRepo, userValidator)
 
 	if err := v1.RunServer(srv, *addr); err != nil {
 		glog.Fatal(err)

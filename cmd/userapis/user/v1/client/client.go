@@ -69,7 +69,7 @@ func createUser(c userv1.UserServiceClient) {
 	u, err := c.Create(ctx, &userv1.CreateRequest{
 		Username: "client",
 		Password: "123123",
-		Email:    "client@client.com",
+		Email:    "client.com",
 		Role:     1,
 	})
 

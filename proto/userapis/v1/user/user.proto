@@ -116,8 +116,7 @@ message UpdateRequest {
   uint64 id = 1 [(gogoproto.moretags) = "validate:\"required,gt=0\""];
   google.protobuf.StringValue username = 2;
   google.protobuf.StringValue password = 3;
-  google.protobuf.StringValue email = 4
-      [(gogoproto.moretags) = "validate:\"omitempty,email\""];
+  google.protobuf.StringValue email = 4;
   Role role = 5;
 }
 

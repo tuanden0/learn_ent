@@ -3,6 +3,7 @@ package v1
 import (
 	"context"
 
+	"github.com/golang/glog"
 	userv1 "github.com/tuanden0/learn_ent/proto/gen/go/v1/user"
 )
 
@@ -12,12 +13,14 @@ type Service interface {
 
 type service struct {
 	userv1.UnimplementedUserServiceServer
-	repo Repository
+	repo      Repository
+	validator validate
 }
 
-func NewService(repo Repository) Service {
+func NewService(repo Repository, validator validate) Service {
 	return &service{
-		repo: repo,
+		repo:      repo,
+		validator: validator,
 	}
 }
 
@@ -26,6 +29,11 @@ func (s *service) Ping(ctx context.Context, in *userv1.PingRequest) (*userv1.Pin
 }
 
 func (s *service) Create(ctx context.Context, in *userv1.CreateRequest) (*userv1.CreateResponse, error) {
+
+	if err := s.validator.Create(ctx, in); err != nil {
+		glog.Errorf("user create input error %v", err)
+		return nil, err
+	}
 
 	u, err := s.repo.Create(ctx, in)
 	if err != nil {
@@ -37,6 +45,11 @@ func (s *service) Create(ctx context.Context, in *userv1.CreateRequest) (*userv1
 
 func (s *service) Retrieve(ctx context.Context, in *userv1.RetrieveRequest) (*userv1.RetrieveResponse, error) {
 
+	if err := s.validator.Retrieve(ctx, in); err != nil {
+		glog.Errorf("user retrieve input error %v", err)
+		return nil, err
+	}
+
 	u, err := s.repo.Retrieve(ctx, in.GetId())
 	if err != nil {
 		return nil, err
@@ -46,6 +59,11 @@ func (s *service) Retrieve(ctx context.Context, in *userv1.RetrieveRequest) (*us
 }
 
 func (s *service) Update(ctx context.Context, in *userv1.UpdateRequest) (*userv1.UpdateResponse, error) {
+
+	if err := s.validator.Update(ctx, in); err != nil {
+		glog.Errorf("user update input error %v", err)
+		return nil, err
+	}
 
 	u, err := s.repo.Update(ctx, in)
 	if err != nil {
@@ -57,6 +75,11 @@ func (s *service) Update(ctx context.Context, in *userv1.UpdateRequest) (*userv1
 
 func (s *service) Delete(ctx context.Context, in *userv1.DeleteRequest) (*userv1.DeleteResponse, error) {
 
+	if err := s.validator.Delete(ctx, in); err != nil {
+		glog.Errorf("user delete input error %v", err)
+		return nil, err
+	}
+
 	err := s.repo.Delete(ctx, in.GetId())
 	if err != nil {
 		return nil, err
@@ -66,6 +89,11 @@ func (s *service) Delete(ctx context.Context, in *userv1.DeleteRequest) (*userv1
 }
 
 func (s *service) List(ctx context.Context, in *userv1.ListRequest) (*userv1.ListResponse, error) {
+
+	if err := s.validator.List(ctx, in); err != nil {
+		glog.Errorf("user list input error %v", err)
+		return nil, err
+	}
 
 	us, err := s.repo.List(ctx, in)
 	if err != nil {

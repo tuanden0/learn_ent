@@ -13,6 +13,8 @@ go run cmd/userapis/user/v1/server/server.go -v=2 -alsologtostderr=1 -log_dir=lo
 go run cmd/userapis/user/v1/server/server.go -logtostderr=true -v=2
 ```
 
+## Bugs
+
 ## Handle errors
 
 [use of closed network connection](https://github.com/grpc-ecosystem/grpc-gateway/issues/727)
