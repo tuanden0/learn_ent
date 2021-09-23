@@ -277,3 +277,87 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "v1/user/user.proto",
 }
+
+// UserAuthenServiceClient is the client API for UserAuthenService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type UserAuthenServiceClient interface {
+	Login(ctx context.Context, in *UserLoginRequest, opts ...grpc.CallOption) (*UserLoginResponse, error)
+}
+
+type userAuthenServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewUserAuthenServiceClient(cc grpc.ClientConnInterface) UserAuthenServiceClient {
+	return &userAuthenServiceClient{cc}
+}
+
+func (c *userAuthenServiceClient) Login(ctx context.Context, in *UserLoginRequest, opts ...grpc.CallOption) (*UserLoginResponse, error) {
+	out := new(UserLoginResponse)
+	err := c.cc.Invoke(ctx, "/user.v1.UserAuthenService/Login", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// UserAuthenServiceServer is the server API for UserAuthenService service.
+// All implementations should embed UnimplementedUserAuthenServiceServer
+// for forward compatibility
+type UserAuthenServiceServer interface {
+	Login(context.Context, *UserLoginRequest) (*UserLoginResponse, error)
+}
+
+// UnimplementedUserAuthenServiceServer should be embedded to have forward compatible implementations.
+type UnimplementedUserAuthenServiceServer struct {
+}
+
+func (UnimplementedUserAuthenServiceServer) Login(context.Context, *UserLoginRequest) (*UserLoginResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+}
+
+// UnsafeUserAuthenServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to UserAuthenServiceServer will
+// result in compilation errors.
+type UnsafeUserAuthenServiceServer interface {
+	mustEmbedUnimplementedUserAuthenServiceServer()
+}
+
+func RegisterUserAuthenServiceServer(s grpc.ServiceRegistrar, srv UserAuthenServiceServer) {
+	s.RegisterService(&UserAuthenService_ServiceDesc, srv)
+}
+
+func _UserAuthenService_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserLoginRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserAuthenServiceServer).Login(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.v1.UserAuthenService/Login",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserAuthenServiceServer).Login(ctx, req.(*UserLoginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// UserAuthenService_ServiceDesc is the grpc.ServiceDesc for UserAuthenService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var UserAuthenService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "user.v1.UserAuthenService",
+	HandlerType: (*UserAuthenServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Login",
+			Handler:    _UserAuthenService_Login_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "v1/user/user.proto",
+}

@@ -5,12 +5,15 @@
     "version": "2.0",
     "contact": {
       "name": "tuanden0",
-      "url": "github.com/tuanden0/refactor_user_ms"
+      "url": "github.com/tuanden0/learn_ent"
     }
   },
   "tags": [
     {
       "name": "UserService"
+    },
+    {
+      "name": "UserAuthenService"
     }
   ],
   "consumes": [
@@ -22,12 +25,12 @@
   "paths": {
     "/v1/user": {
       "post": {
-        "operationId": "UserService_Create",
+        "operationId": "UserAuthenService_Login",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1CreateResponse"
+              "$ref": "#/definitions/v1UserLoginResponse"
             }
           },
           "default": {
@@ -43,12 +46,12 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1CreateRequest"
+              "$ref": "#/definitions/v1UserLoginRequest"
             }
           }
         ],
         "tags": [
-          "UserService"
+          "UserAuthenService"
         ]
       }
     },
@@ -416,6 +419,35 @@
         },
         "role": {
           "$ref": "#/definitions/v1Role"
+        }
+      }
+    },
+    "v1UserLoginRequest": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "v1UserLoginResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "username": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
         }
       }
     }

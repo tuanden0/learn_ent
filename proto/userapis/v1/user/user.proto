@@ -14,7 +14,7 @@ contact : {
 name:
   "tuanden0";
 url:
-  "github.com/tuanden0/refactor_user_ms";
+  "github.com/tuanden0/learn_ent";
 };
 }
 ;
@@ -56,6 +56,15 @@ service UserService {
   rpc List(ListRequest) returns (ListResponse) {
     option (google.api.http) = {
       post : "/v1/users"
+      body : "*"
+    };
+  }
+}
+
+service UserAuthenService {
+  rpc Login(UserLoginRequest) returns (UserLoginResponse) {
+    option (google.api.http) = {
+      post : "/v1/user"
       body : "*"
     };
   }
@@ -147,3 +156,15 @@ message UserList {
 }
 
 message ListResponse { repeated UserList users = 1; }
+
+message UserLoginRequest {
+  string username = 1 [(gogoproto.moretags) = "validate:\"required\""];
+  string password = 2 [(gogoproto.moretags) = "validate:\"required\""];
+}
+
+message UserLoginResponse {
+  uint64 id = 1;
+  string username = 2;
+  string email = 3;
+  string role = 4;
+}

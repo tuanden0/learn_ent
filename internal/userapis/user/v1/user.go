@@ -30,6 +30,6 @@ func hashPassword(password string) string {
 	return base64EncodedPasswordHash
 }
 
-// func isPasswordMatch(hashed, password string) bool {
-// 	return hashed == hashPassword(password)
-// }
+func isPasswordMatch(hashed, password string) bool {
+	return hashed == hashPassword(password)
+}

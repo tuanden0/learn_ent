@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package auth.v1;
+
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "gogoproto/gogo.proto";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info : {title : "Refactor User Authen Service";
+version : "2.0";
+contact : {
+name:
+  "tuanden0";
+url:
+  "github.com/tuanden0/learn_ent";
+};
+}
+;
+}
+;
+
+service AuthenService {
+  rpc Ping(PingRequest) returns (PingResponse) {
+    option (google.api.http) = {
+      get : "/v1/auth/ping"
+    };
+  }
+  rpc Login(LoginRequest) returns (LoginResponse) {
+    option (google.api.http) = {
+      post : "/v1/auth"
+      body : "*"
+    };
+  }
+}
+
+message PingRequest {}
+
+message PingResponse {}
+
+message LoginRequest {
+  string username = 1 [(gogoproto.moretags) = "validate:\"required\""];
+  string password = 2 [(gogoproto.moretags) = "validate:\"required\""];
+}
+
+message LoginResponse { string access_token = 1; }

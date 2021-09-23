@@ -9,6 +9,7 @@ import (
 
 type Service interface {
 	userv1.UserServiceServer
+	userv1.UserAuthenServiceServer
 }
 
 type service struct {
@@ -101,4 +102,20 @@ func (s *service) List(ctx context.Context, in *userv1.ListRequest) (*userv1.Lis
 	}
 
 	return mapListResponse(us), nil
+}
+
+func (s *service) Login(ctx context.Context, in *userv1.UserLoginRequest) (*userv1.UserLoginResponse, error) {
+
+	if err := s.validator.Login(ctx, in); err != nil {
+		glog.Errorf("user login input error %v", err)
+		return nil, err
+	}
+
+	u, err := s.repo.Login(ctx, in)
+	if err != nil {
+		glog.Error(err)
+		return nil, errLogin
+	}
+
+	return mapUserLoginResponse(u), nil
 }

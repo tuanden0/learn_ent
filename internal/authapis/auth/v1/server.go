@@ -11,7 +11,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	userv1 "github.com/tuanden0/learn_ent/proto/gen/go/v1/user"
+	authv1 "github.com/tuanden0/learn_ent/proto/gen/go/v1/auth"
 	"google.golang.org/grpc"
 )
 
@@ -23,32 +23,29 @@ func setupServeMuxOptions() (opts []runtime.ServeMuxOption) {
 	return opts
 }
 
+func setupClientDialOpts() []grpc.DialOption {
+	return []grpc.DialOption{
+		grpc.WithBlock(),
+		grpc.WithInsecure(),
+	}
+}
+
 func RunServer(srv Service, addr string) error {
 
-	// Create new context
-	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// Create server listener
 	lis, lisErr := net.Listen("tcp", addr)
 	if lisErr != nil {
 		return lisErr
 	}
 	defer lis.Close()
 
-	// Create error channel
 	errChan := make(chan error)
 
-	// Create grpcServer with options
-	grpcServerOpts := setupGrpcServerOptions()
-	grpcServer := grpc.NewServer(grpcServerOpts...)
+	grpcServer := grpc.NewServer(setupGrpcServerOptions()...)
+	authv1.RegisterAuthenServiceServer(grpcServer, srv)
 
-	// Register gRPC service
-	userv1.RegisterUserServiceServer(grpcServer, srv)
-	userv1.RegisterUserAuthenServiceServer(grpcServer, srv)
-
-	// Run gRPC server
 	go func() {
 		glog.Info("gRPC server is running")
 		if err := grpcServer.Serve(lis); err != nil {
@@ -56,21 +53,13 @@ func RunServer(srv Service, addr string) error {
 		}
 	}()
 
-	// Create HTTP server same port with gRPC
-	gwServerMuxOpts := setupServeMuxOptions()
-	gwmux := runtime.NewServeMux(gwServerMuxOpts...)
-
-	// Register gRPC Gateway service
-	if err := userv1.RegisterUserServiceHandlerServer(ctx, gwmux, srv); err != nil {
-		return err
-	}
-
-	if err := userv1.RegisterUserAuthenServiceHandlerServer(ctx, gwmux, srv); err != nil {
+	mux := runtime.NewServeMux(setupServeMuxOptions()...)
+	if err := authv1.RegisterAuthenServiceHandlerServer(ctx, mux, srv); err != nil {
 		return err
 	}
 
 	gwServer := &http.Server{
-		Handler: gwmux,
+		Handler: mux,
 	}
 
 	go func() {
@@ -82,7 +71,6 @@ func RunServer(srv Service, addr string) error {
 		}
 	}()
 
-	// Handle shutdown signal
 	go func() {
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)

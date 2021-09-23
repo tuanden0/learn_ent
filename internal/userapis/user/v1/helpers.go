@@ -46,3 +46,12 @@ func mapListResponse(us []*ent.User) *userv1.ListResponse {
 
 	return &userv1.ListResponse{Users: l}
 }
+
+func mapUserLoginResponse(u *ent.User) *userv1.UserLoginResponse {
+	return &userv1.UserLoginResponse{
+		Id:       uint64(u.ID),
+		Username: u.Username,
+		Email:    u.Email,
+		Role:     string(userv1.Role(u.Role)),
+	}
+}

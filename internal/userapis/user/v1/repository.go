@@ -16,6 +16,7 @@ type Repository interface {
 	Update(ctx context.Context, u *userv1.UpdateRequest) (*ent.User, error)
 	Delete(ctx context.Context, id uint64) error
 	List(ctx context.Context, in *userv1.ListRequest) ([]*ent.User, error)
+	Login(ctx context.Context, in *userv1.UserLoginRequest) (*ent.User, error)
 }
 
 type repoManager struct {
@@ -135,4 +136,18 @@ func (r *repoManager) List(ctx context.Context, in *userv1.ListRequest) ([]*ent.
 	}
 
 	return us, nil
+}
+
+func (r *repoManager) Login(ctx context.Context, in *userv1.UserLoginRequest) (*ent.User, error) {
+
+	u, err := r.client.User.Query().Where(user.Username(in.GetUsername())).First(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if ok := isPasswordMatch(u.Password, in.GetPassword()); !ok {
+		return nil, errLogin
+	}
+
+	return u, nil
 }

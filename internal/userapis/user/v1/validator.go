@@ -167,6 +167,15 @@ func (v *validate) List(ctx context.Context, in *userv1.ListRequest) error {
 	return nil
 }
 
+func (v *validate) Login(ctx context.Context, in *userv1.UserLoginRequest) error {
+
+	if err := v.Validate.Struct(in); err != nil {
+		return v.parseError(err)
+	}
+
+	return nil
+}
+
 // Helper functions
 func v_Update(sl validator.StructLevel) {
 

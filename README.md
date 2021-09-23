@@ -5,6 +5,7 @@
 ```bash
 # Default was auto set -logtostderr=true -v=2
 go run cmd/userapis/user/v1/server/server.go
+go run cmd/authapis/auth/v1/server/server.go
 
 # Log to stderr, file and using version 2
 go run cmd/userapis/user/v1/server/server.go -v=2 -alsologtostderr=1 -log_dir=log
