@@ -24,8 +24,14 @@ func main() {
 	// Create auth repo
 	authRepo := v1.NewRepoManager()
 
+	// Create auth validator
+	authValidator := v1.NewValidate()
+	if err := authValidator.Init(); err != nil {
+		glog.Fatal(err)
+	}
+
 	// Create auth service
-	srv := v1.NewService(authRepo)
+	srv := v1.NewService(authRepo, authValidator)
 
 	if err := v1.RunServer(srv, *addr); err != nil {
 		glog.Fatal(err)

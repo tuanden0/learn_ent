@@ -16,6 +16,10 @@ import (
 )
 
 func setupGrpcServerOptions() (opts []grpc.ServerOption) {
+	opts = append(opts, grpc.ChainUnaryInterceptor(
+		authInterceptor,
+		logUnaryInterceptor,
+	))
 	return opts
 }
 
@@ -25,8 +29,8 @@ func setupServeMuxOptions() (opts []runtime.ServeMuxOption) {
 
 func setupClientDialOpts() []grpc.DialOption {
 	return []grpc.DialOption{
-		grpc.WithBlock(),
 		grpc.WithInsecure(),
+		// grpc.WithBlock(),
 	}
 }
 
@@ -54,7 +58,7 @@ func RunServer(srv Service, addr string) error {
 	}()
 
 	mux := runtime.NewServeMux(setupServeMuxOptions()...)
-	if err := authv1.RegisterAuthenServiceHandlerServer(ctx, mux, srv); err != nil {
+	if err := authv1.RegisterAuthenServiceHandlerFromEndpoint(ctx, mux, addr, setupClientDialOpts()); err != nil {
 		return err
 	}
 

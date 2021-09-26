@@ -20,7 +20,7 @@
     "application/json"
   ],
   "paths": {
-    "/v1/auth": {
+    "/v1/auth/login": {
       "post": {
         "operationId": "AuthenService_Login",
         "responses": {
@@ -69,6 +69,38 @@
             }
           }
         },
+        "tags": [
+          "AuthenService"
+        ]
+      }
+    },
+    "/v1/auth/verify": {
+      "post": {
+        "operationId": "AuthenService_Verify",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1VerifyResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1VerifyRequest"
+            }
+          }
+        ],
         "tags": [
           "AuthenService"
         ]
@@ -127,6 +159,33 @@
     },
     "v1PingResponse": {
       "type": "object"
+    },
+    "v1VerifyRequest": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string"
+        }
+      }
+    },
+    "v1VerifyResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "username": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "exp": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
     }
   }
 }

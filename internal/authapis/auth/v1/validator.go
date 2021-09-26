@@ -11,7 +11,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	en_translations "github.com/go-playground/validator/v10/translations/en"
 	"github.com/golang/glog"
-	userv1 "github.com/tuanden0/learn_ent/proto/gen/go/v1/user"
+	authv1 "github.com/tuanden0/learn_ent/proto/gen/go/v1/auth"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -43,9 +43,7 @@ func (v *validate) Init() error {
 	return nil
 }
 
-func (v *validate) initValidate() {
-	v.Validate.RegisterStructValidation(v_Update, userv1.UpdateRequest{})
-}
+func (v *validate) initValidate() {}
 
 func (v *validate) initTranslator() error {
 
@@ -122,7 +120,7 @@ func (v *validate) registerCustomTranslate(trans ut.Translator, tag, msg string)
 }
 
 // Validate services
-func (v *validate) Create(ctx context.Context, in *userv1.CreateRequest) error {
+func (v *validate) Login(ctx context.Context, in *authv1.LoginRequest) error {
 
 	if err := v.Validate.Struct(in); err != nil {
 		return v.parseError(err)
@@ -131,69 +129,16 @@ func (v *validate) Create(ctx context.Context, in *userv1.CreateRequest) error {
 	return nil
 }
 
-func (v *validate) Retrieve(ctx context.Context, in *userv1.RetrieveRequest) error {
+func (v *validate) Verify(ctx context.Context, in *authv1.VerifyRequest) error {
+
+	uc := parseUsersOrNilFromCTX(ctx)
+	if uc == nil {
+		return errUserVerify
+	}
 
 	if err := v.Validate.Struct(in); err != nil {
 		return v.parseError(err)
 	}
 
 	return nil
-}
-
-func (v *validate) Update(ctx context.Context, in *userv1.UpdateRequest) error {
-
-	if err := v.Validate.Struct(in); err != nil {
-		return v.parseError(err)
-	}
-
-	return nil
-}
-
-func (v *validate) Delete(ctx context.Context, in *userv1.DeleteRequest) error {
-
-	if err := v.Validate.Struct(in); err != nil {
-		return v.parseError(err)
-	}
-
-	return nil
-}
-
-func (v *validate) List(ctx context.Context, in *userv1.ListRequest) error {
-
-	if err := v.Validate.Struct(in); err != nil {
-		return v.parseError(err)
-	}
-
-	return nil
-}
-
-func (v *validate) Login(ctx context.Context, in *userv1.UserLoginRequest) error {
-
-	if err := v.Validate.Struct(in); err != nil {
-		return v.parseError(err)
-	}
-
-	return nil
-}
-
-// Helper functions
-func v_Update(sl validator.StructLevel) {
-
-	in := sl.Current().Interface().(userv1.UpdateRequest)
-
-	email := in.GetEmail()
-	if email != nil {
-		err := vd.Var(email.GetValue(), "email")
-		if err != nil {
-			sl.ReportError(in.Email, "email", "Email", "email", "")
-		}
-	}
-
-	passwd := in.GetPassword()
-	if passwd != nil {
-		err := vd.Var(passwd.GetValue(), "gt=4")
-		if err != nil {
-			sl.ReportError(in.Password, "password", "Password", "password", "")
-		}
-	}
 }

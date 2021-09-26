@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 type AuthenServiceClient interface {
 	Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error)
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
+	Verify(ctx context.Context, in *VerifyRequest, opts ...grpc.CallOption) (*VerifyResponse, error)
 }
 
 type authenServiceClient struct {
@@ -48,12 +49,22 @@ func (c *authenServiceClient) Login(ctx context.Context, in *LoginRequest, opts 
 	return out, nil
 }
 
+func (c *authenServiceClient) Verify(ctx context.Context, in *VerifyRequest, opts ...grpc.CallOption) (*VerifyResponse, error) {
+	out := new(VerifyResponse)
+	err := c.cc.Invoke(ctx, "/auth.v1.AuthenService/Verify", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthenServiceServer is the server API for AuthenService service.
 // All implementations should embed UnimplementedAuthenServiceServer
 // for forward compatibility
 type AuthenServiceServer interface {
 	Ping(context.Context, *PingRequest) (*PingResponse, error)
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
+	Verify(context.Context, *VerifyRequest) (*VerifyResponse, error)
 }
 
 // UnimplementedAuthenServiceServer should be embedded to have forward compatible implementations.
@@ -65,6 +76,9 @@ func (UnimplementedAuthenServiceServer) Ping(context.Context, *PingRequest) (*Pi
 }
 func (UnimplementedAuthenServiceServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+}
+func (UnimplementedAuthenServiceServer) Verify(context.Context, *VerifyRequest) (*VerifyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Verify not implemented")
 }
 
 // UnsafeAuthenServiceServer may be embedded to opt out of forward compatibility for this service.
@@ -114,6 +128,24 @@ func _AuthenService_Login_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthenService_Verify_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VerifyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthenServiceServer).Verify(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/auth.v1.AuthenService/Verify",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthenServiceServer).Verify(ctx, req.(*VerifyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuthenService_ServiceDesc is the grpc.ServiceDesc for AuthenService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -128,6 +160,10 @@ var AuthenService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Login",
 			Handler:    _AuthenService_Login_Handler,
+		},
+		{
+			MethodName: "Verify",
+			Handler:    _AuthenService_Verify_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

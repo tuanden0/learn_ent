@@ -1,5 +1,7 @@
 # LEARN ENT
 
+This is repository is not only learning about Ent ORM but also gRPC, gRPC gateway and more things. It will be implement by owner idea to know more a bout go world.
+
 ## How to run
 
 ```bash
@@ -15,6 +17,7 @@ go run cmd/userapis/user/v1/server/server.go -logtostderr=true -v=2
 ```
 
 ## Bugs
+Implement authentication between service User and Auth but it take to much time (1 - 4 second) to verify each other.
 
 ## Handle errors
 

@@ -52,6 +52,6 @@ func mapUserLoginResponse(u *ent.User) *userv1.UserLoginResponse {
 		Id:       uint64(u.ID),
 		Username: u.Username,
 		Email:    u.Email,
-		Role:     string(userv1.Role(u.Role)),
+		Role:     userv1.Role_name[int32(u.Role)],
 	}
 }

@@ -23,6 +23,13 @@ func setupServeMuxOptions() (opts []runtime.ServeMuxOption) {
 	return opts
 }
 
+func setupClientDialOpts() []grpc.DialOption {
+	return []grpc.DialOption{
+		grpc.WithInsecure(),
+		// grpc.WithBlock(),
+	}
+}
+
 func RunServer(srv Service, addr string) error {
 
 	// Create new context
@@ -61,11 +68,11 @@ func RunServer(srv Service, addr string) error {
 	gwmux := runtime.NewServeMux(gwServerMuxOpts...)
 
 	// Register gRPC Gateway service
-	if err := userv1.RegisterUserServiceHandlerServer(ctx, gwmux, srv); err != nil {
+	if err := userv1.RegisterUserServiceHandlerFromEndpoint(ctx, gwmux, addr, setupClientDialOpts()); err != nil {
 		return err
 	}
 
-	if err := userv1.RegisterUserAuthenServiceHandlerServer(ctx, gwmux, srv); err != nil {
+	if err := userv1.RegisterUserAuthenServiceHandlerFromEndpoint(ctx, gwmux, addr, setupClientDialOpts()); err != nil {
 		return err
 	}
 

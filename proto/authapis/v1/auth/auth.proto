@@ -28,7 +28,13 @@ service AuthenService {
   }
   rpc Login(LoginRequest) returns (LoginResponse) {
     option (google.api.http) = {
-      post : "/v1/auth"
+      post : "/v1/auth/login"
+      body : "*"
+    };
+  }
+  rpc Verify(VerifyRequest) returns (VerifyResponse) {
+    option (google.api.http) = {
+      post : "/v1/auth/verify"
       body : "*"
     };
   }
@@ -44,3 +50,14 @@ message LoginRequest {
 }
 
 message LoginResponse { string access_token = 1; }
+
+message VerifyRequest {
+  string token = 1 [(gogoproto.moretags) = "validate:\"required\""];
+}
+
+message VerifyResponse {
+  uint64 id = 1;
+  string username = 2;
+  string role = 3;
+  int64 exp = 4;
+}
