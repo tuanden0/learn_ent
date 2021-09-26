@@ -6,8 +6,7 @@ import (
 )
 
 var (
-	errGenerateToken      = status.Error(codes.Internal, "unable to generate token")
-	errVerifyToken        = status.Error(codes.InvalidArgument, "token invalid")
-	errUserCallLoginAgain = status.Error(codes.PermissionDenied, "already login")
-	errUserVerify         = status.Error(codes.Unauthenticated, "unauthenticated")
+	errGenerateToken = status.Error(codes.Internal, "unable to generate token")
+	errVerifyToken   = status.Error(codes.InvalidArgument, "token invalid")
+	errUserVerify    = status.Error(codes.Unauthenticated, "unauthenticated")
 )

@@ -12,6 +12,8 @@ import (
 	"github.com/golang/glog"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	authv1 "github.com/tuanden0/learn_ent/proto/gen/go/v1/auth"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 	"google.golang.org/grpc"
 )
 
@@ -30,8 +32,17 @@ func setupServeMuxOptions() (opts []runtime.ServeMuxOption) {
 func setupClientDialOpts() []grpc.DialOption {
 	return []grpc.DialOption{
 		grpc.WithInsecure(),
-		// grpc.WithBlock(),
 	}
+}
+
+func grpcHandlerFunc(grpcServer *grpc.Server, otherHandler http.Handler) http.Handler {
+	return h2c.NewHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.ProtoMajor == 2 && strings.Contains(r.Header.Get("Content-Type"), "application/grpc") {
+			grpcServer.ServeHTTP(w, r)
+		} else {
+			otherHandler.ServeHTTP(w, r)
+		}
+	}), &http2.Server{})
 }
 
 func RunServer(srv Service, addr string) error {
@@ -50,20 +61,13 @@ func RunServer(srv Service, addr string) error {
 	grpcServer := grpc.NewServer(setupGrpcServerOptions()...)
 	authv1.RegisterAuthenServiceServer(grpcServer, srv)
 
-	go func() {
-		glog.Info("gRPC server is running")
-		if err := grpcServer.Serve(lis); err != nil {
-			errChan <- err
-		}
-	}()
-
 	mux := runtime.NewServeMux(setupServeMuxOptions()...)
 	if err := authv1.RegisterAuthenServiceHandlerFromEndpoint(ctx, mux, addr, setupClientDialOpts()); err != nil {
 		return err
 	}
 
 	gwServer := &http.Server{
-		Handler: mux,
+		Handler: grpcHandlerFunc(grpcServer, mux),
 	}
 
 	go func() {
@@ -80,7 +84,6 @@ func RunServer(srv Service, addr string) error {
 		signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 		glog.Infof("got %v signal, graceful shutdown server", <-c)
 		cancel()
-		grpcServer.GracefulStop()
 		gwServer.Shutdown(ctx)
 		close(errChan)
 	}()

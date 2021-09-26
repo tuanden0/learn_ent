@@ -12,6 +12,8 @@ import (
 	"github.com/golang/glog"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	userv1 "github.com/tuanden0/learn_ent/proto/gen/go/v1/user"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 	"google.golang.org/grpc"
 )
 
@@ -26,8 +28,17 @@ func setupServeMuxOptions() (opts []runtime.ServeMuxOption) {
 func setupClientDialOpts() []grpc.DialOption {
 	return []grpc.DialOption{
 		grpc.WithInsecure(),
-		// grpc.WithBlock(),
 	}
+}
+
+func grpcHandlerFunc(grpcServer *grpc.Server, otherHandler http.Handler) http.Handler {
+	return h2c.NewHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.ProtoMajor == 2 && strings.Contains(r.Header.Get("Content-Type"), "application/grpc") {
+			grpcServer.ServeHTTP(w, r)
+		} else {
+			otherHandler.ServeHTTP(w, r)
+		}
+	}), &http2.Server{})
 }
 
 func RunServer(srv Service, addr string) error {
@@ -48,44 +59,34 @@ func RunServer(srv Service, addr string) error {
 	errChan := make(chan error)
 
 	// Create grpcServer with options
-	grpcServerOpts := setupGrpcServerOptions()
-	grpcServer := grpc.NewServer(grpcServerOpts...)
+	grpcServer := grpc.NewServer(setupGrpcServerOptions()...)
 
 	// Register gRPC service
 	userv1.RegisterUserServiceServer(grpcServer, srv)
 	userv1.RegisterUserAuthenServiceServer(grpcServer, srv)
 
-	// Run gRPC server
-	go func() {
-		glog.Info("gRPC server is running")
-		if err := grpcServer.Serve(lis); err != nil {
-			errChan <- err
-		}
-	}()
-
 	// Create HTTP server same port with gRPC
-	gwServerMuxOpts := setupServeMuxOptions()
-	gwmux := runtime.NewServeMux(gwServerMuxOpts...)
+	mux := runtime.NewServeMux(setupServeMuxOptions()...)
 
 	// Register gRPC Gateway service
-	if err := userv1.RegisterUserServiceHandlerFromEndpoint(ctx, gwmux, addr, setupClientDialOpts()); err != nil {
+	if err := userv1.RegisterUserServiceHandlerFromEndpoint(ctx, mux, addr, setupClientDialOpts()); err != nil {
 		return err
 	}
 
-	if err := userv1.RegisterUserAuthenServiceHandlerFromEndpoint(ctx, gwmux, addr, setupClientDialOpts()); err != nil {
+	if err := userv1.RegisterUserAuthenServiceHandlerFromEndpoint(ctx, mux, addr, setupClientDialOpts()); err != nil {
 		return err
 	}
 
+	// Create http server
 	gwServer := &http.Server{
-		Handler: gwmux,
+		Handler: grpcHandlerFunc(grpcServer, mux),
 	}
 
+	// Run http server
 	go func() {
 		glog.Info("HTTP server is running")
-		if err := gwServer.Serve(lis); err != nil {
-			if !strings.Contains(err.Error(), "use of closed network connection") {
-				errChan <- err
-			}
+		if err := gwServer.Serve(lis); err != http.ErrServerClosed {
+			errChan <- err
 		}
 	}()
 
@@ -95,7 +96,6 @@ func RunServer(srv Service, addr string) error {
 		signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 		glog.Infof("got %v signal, graceful shutdown server", <-c)
 		cancel()
-		grpcServer.GracefulStop()
 		gwServer.Shutdown(ctx)
 		close(errChan)
 	}()

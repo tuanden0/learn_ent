@@ -17,8 +17,13 @@ go run cmd/userapis/user/v1/server/server.go -logtostderr=true -v=2
 ```
 
 ## Bugs
-Implement authentication between service User and Auth but it take to much time (1 - 4 second) to verify each other.
+P1: Implement authentication between service User and Auth but it take to much time (1 - 4 second) to verify each other.
+
+## Resolve
+P1: Using http handler to handle connection instead of running gRPC server
 
 ## Handle errors
 
 [use of closed network connection](https://github.com/grpc-ecosystem/grpc-gateway/issues/727)
+
+[Bug P1](https://github.com/philips/grpc-gateway-example/issues/22#issuecomment-490733965)
