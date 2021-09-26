@@ -8,7 +8,8 @@ import (
 )
 
 var (
-	addr = flag.String("ip", "0.0.0.0:8001", "server address:port")
+	addr  = flag.String("ip", "0.0.0.0:8001", "server address:port")
+	isTLS = flag.Bool("tls", true, "enable TLS server")
 )
 
 func init() {
@@ -33,7 +34,13 @@ func main() {
 	// Create auth service
 	srv := v1.NewService(authRepo, authValidator)
 
-	if err := v1.RunServer(srv, *addr); err != nil {
-		glog.Fatal(err)
+	if *isTLS {
+		if err := v1.RunServerWithTLS(srv, *addr); err != nil {
+			glog.Fatal(err)
+		}
+	} else {
+		if err := v1.RunServer(srv, *addr); err != nil {
+			glog.Fatal(err)
+		}
 	}
 }
