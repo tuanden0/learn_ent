@@ -9,7 +9,7 @@ import (
 
 var (
 	addr  = flag.String("ip", "0.0.0.0:8000", "server address:port")
-	isTLS = flag.Bool("tls", true, "enable TLS server")
+	isTLS = flag.Bool("tls", false, "enable TLS server")
 )
 
 func init() {

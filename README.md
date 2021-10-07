@@ -1,13 +1,20 @@
 # LEARN ENT
 
-This is repository is not only learning about Ent ORM but also gRPC, gRPC gateway and more things. It will be implement by owner idea to know more a bout go world.
+This is repository is not only learning about Ent ORM but also gRPC, gRPC gateway and more things. It will be implement by owner idea to know more about go world.
 
 ## How to run
 
 ```bash
+# Using docker to setup env
+docker-compose up -d
+
+# Cleanup after done
+docker-compose rm -sfv
+
 # Default was auto set -logtostderr=true -v=2
 go run cmd/userapis/user/v1/server/server.go
 go run cmd/authapis/auth/v1/server/server.go
+go run cmd/itemapis/item/v1/server/server.go
 
 # Log to stderr, file and using version 2
 go run cmd/userapis/user/v1/server/server.go -v=2 -alsologtostderr=1 -log_dir=log
@@ -25,7 +32,7 @@ Re-Implement validate conditions on Auth service to use token to call verify met
 ## Bugs
 P1: Implement authentication between service User and Auth but it take to much time (1 - 4 second) to verify each other.
 
-## Resolve
+## Resolves
 P1: Using http handler (grpcHandlerFunc) to handle connection instead of running gRPC server.
 - We make everything more easier if we use TLS instead of WithInsecure.
 - If use TLS, we don't need to implement HTTP handler (grpcHandlerFunc) to check if request is HTTP or gRPC and the speed is same as use grpcHandlerFunc.
